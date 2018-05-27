@@ -45,13 +45,24 @@ def send_email(name,ip):
     smtp_object.sendmail(from_address,to_address,msg)
 
 
+counter = 0
+
 def ping_bulk(): # https://stackoverflow.com/questions/2953462/pinging-servers-in-python
     address_list = read_ip_addresses()
+    global counter
     for entry in address_list:
         response = os.system("ping -c 1 -w5 " + entry[1] + " > /dev/null 2>&1") # works on linux only
         if response == 0:
             pass
         else:
-            send_email(entry[0],entry[1])
+            if counter < 1:
+                send_email(entry[0],entry[1])
+                print(entry[0] + " with an IP of " + entry[1] + " was down on " + str(datetime.datetime.now()))
+                counter = 1000 # delay so I don't spam myself too hard; more machines down means more frequent emails
+            else:
+                counter = counter - 1
 
-ping_bulk()
+
+if __name__ == "__main__":
+    while 1:
+        ping_bulk()
